@@ -66,10 +66,20 @@ def max_component(graph: Graph) -> dict:
     
     return sol
 
-def single_source_shortest(graph: Graph) -> dict:
+#orden: O(n*(n+m)) | tiempo: (vertexs),n=875.713 (edges),m=5.105.039  O(875.713*(875.713 + 5.105.039)) |
+def single_source_shortest(graph: Graph) -> dict: 
     distances = {}
 
     for vertex in graph._graph:
         distances[vertex] = bfs(graph, vertex)
-    
-    return distances
+        
+    return distances 
+
+def triangles(graph: Graph) -> int:
+    cant = 0
+    for a in graph._graph:
+        for b in graph.get_neighbors(a):
+            for c in graph.get_neighbors(b):
+                cant += 1 if a in graph.get_neighbors(c) else 0
+
+    return cant // 3
