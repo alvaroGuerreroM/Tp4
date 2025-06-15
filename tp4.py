@@ -33,22 +33,22 @@ def dfs(graph: Graph, vertex: str) -> set:
 
     return visited
 
-def bfs(graph: Graph, vertex: str) -> set:
-    visited = set()
+def bfs(graph: Graph, vertex: str) -> dict:
+    distances = {}
     queue = deque()
 
-    visited.add(vertex)
+    distances[vertex] = 0
     queue.append(vertex)
 
     while queue:
         s = queue.popleft()
 
         for n in graph.get_neighbors(s):
-            if n not in visited:    
-                visited.add(n)
+            if n not in distances:    
+                distances[n] = distances[s] + 1 #por cada vecino que encontramos, le asignamos la distancia del nodo actual + 1
                 queue.append(n)
 
-    return visited
+    return distances
 
 def max_component(graph: Graph) -> dict:
     visited = set()
@@ -66,3 +66,10 @@ def max_component(graph: Graph) -> dict:
     
     return sol
 
+def single_source_shortest(graph: Graph) -> dict:
+    distances = {}
+
+    for vertex in graph._graph:
+        distances[vertex] = bfs(graph, vertex)
+    
+    return distances
