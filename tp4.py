@@ -33,6 +33,23 @@ def dfs(graph: Graph, vertex: str) -> set:
 
     return visited
 
+def bfs(graph: Graph, vertex: str) -> set:
+    visited = set()
+    queue = deque()
+
+    visited.add(vertex)
+    queue.append(vertex)
+
+    while queue:
+        s = queue.popleft()
+
+        for n in graph.get_neighbors(s):
+            if n not in visited:    
+                visited.add(n)
+                queue.append(n)
+
+    return visited
+
 def max_component(graph: Graph) -> dict:
     visited = set()
     component = set()
@@ -48,3 +65,4 @@ def max_component(graph: Graph) -> dict:
             sol["cant"] += 1
     
     return sol
+
