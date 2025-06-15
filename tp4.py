@@ -88,3 +88,16 @@ def triangles(graph: Graph) -> int:
 
     return cant // 3
 
+def graph_diameter(graph: Graph) -> int: #mejorar con 2 bfs
+    visited = set()
+    component = set()
+    diameter = 0
+
+    for vertex in graph._graph:
+        if vertex not in visited:
+            component = bfs(graph, vertex)
+            visited.update(component.keys())
+
+            diameter = max(diameter, max(component.values()))
+    
+    return diameter
