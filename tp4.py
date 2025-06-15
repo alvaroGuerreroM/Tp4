@@ -16,19 +16,35 @@ with open('web-Google.txt', 'r') as file:
                 page_graph.add_vertex(str(v))
         page_graph.add_edge(str(edge[0]), str(edge[1]))
 
-def dfs(graph, node):
+def dfs(graph: Graph, vertex: str) -> set:
     visited = set()
     stack = deque()
 
-    visited.add(node)
-    stack.append(node)
+    visited.add(vertex)
+    stack.append(vertex)
 
     while stack:
-        s = stack.pop(node)
+        s = stack.pop()
 
-        for n in reversed(graph[s]):
-            if n not in visited:
+        for n in reversed(graph.get_neighbors(s)):
+            if n not in visited:    
                 visited.add(n)
                 stack.append(n)
 
     return visited
+
+def max_component(graph: Graph) -> dict:
+    visited = set()
+    component = set()
+    sol = {"mayor":0,"cant":0}
+
+    for vertex in graph._graph:
+        if vertex not in visited:
+            component = dfs(graph, vertex)
+            visited.update(component) 
+            
+            sol["mayor"] = max(sol["mayor"], len(component))
+
+            sol["cant"] += 1
+    
+    return sol
