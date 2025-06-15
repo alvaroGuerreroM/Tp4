@@ -78,8 +78,13 @@ def single_source_shortest(graph: Graph) -> dict:
 def triangles(graph: Graph) -> int:
     cant = 0
     for a in graph._graph:
+        neighbors_a = set(graph.get_neighbors(a))
         for b in graph.get_neighbors(a):
-            for c in graph.get_neighbors(b):
+            neighbors_b = set(graph.get_neighbors(b))
+            intersection = neighbors_a & neighbors_b
+
+            for c in intersection:
                 cant += 1 if a in graph.get_neighbors(c) else 0
 
     return cant // 3
+
