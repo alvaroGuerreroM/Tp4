@@ -16,6 +16,17 @@ with open('web-Google.txt', 'r') as file:
                 page_graph.add_vertex(str(v))
         page_graph.add_edge(str(edge[0]), str(edge[1]))
 
+undirected_graph = Graph()
+
+for vertex in page_graph._graph:
+    undirected_graph.add_vertex(vertex)
+
+for vertex in page_graph._graph:
+    for neighbor in page_graph.get_neighbors(vertex):
+        if not undirected_graph.edge_exists(vertex, neighbor) and not undirected_graph.edge_exists(neighbor, vertex):
+            undirected_graph.add_edge(vertex, neighbor)
+            undirected_graph.add_edge(neighbor, vertex)
+
 def dfs(graph: Graph, vertex: str) -> set:
     visited = set()
     stack = deque()
@@ -50,14 +61,14 @@ def bfs(graph: Graph, vertex: str) -> dict:
 
     return distances
 
-def max_component(graph: Graph) -> dict:
+def max_component(undirected_graph: Graph) -> dict:
     visited = set()
     component = set()
     sol = {"mayor":0,"cant":0}
 
-    for vertex in graph._graph:
+    for vertex in undirected_graph._graph:
         if vertex not in visited:
-            component = dfs(graph, vertex)
+            component = dfs(undirected_graph, vertex)
             visited.update(component) 
             
             sol["mayor"] = max(sol["mayor"], len(component))
@@ -75,27 +86,28 @@ def single_source_shortest(graph: Graph) -> dict:
         
     return distances 
 
-def triangles(graph: Graph) -> int:
+def triangles(undirected_graph: Graph) -> int:
     cant = 0
-    for a in graph._graph:
-        neighbors_a = set(graph.get_neighbors(a))
-        for b in graph.get_neighbors(a):
-            neighbors_b = set(graph.get_neighbors(b))
-            intersection = neighbors_a & neighbors_b
+    for a in undirected_graph._graph:
+        neighbors_a = set(undirected_graph.get_neighbors(a))
+        for b in neighbors_a:
+            if b > a:
+                neighbors_b = set(undirected_graph.get_neighbors(b))
+                intersection = neighbors_a & neighbors_b
 
             for c in intersection:
-                cant += 1 if a in graph.get_neighbors(c) else 0
+                cant += 1 if c > b else 0
 
-    return cant // 3
+    return cant
 
-def graph_diameter(graph: Graph) -> int: #mejorar con 2 bfs
+def graph_diameter(undirected_graph: Graph) -> int: #mejorar con 2 bfs
     visited = set()
     component = set()
     diameter = 0
 
-    for vertex in graph._graph:
+    for vertex in undirected_graph._graph:
         if vertex not in visited:
-            component = bfs(graph, vertex)
+            component = bfs(undirected_graph, vertex)
             visited.update(component.keys())
 
             diameter = max(diameter, max(component.values()))
