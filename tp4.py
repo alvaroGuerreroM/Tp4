@@ -3,7 +3,7 @@ from collections import deque
 
 page_graph = Graph()
 
-with open('web-Google.txt', 'r') as file:
+with open('C:/Users/alvar/Documents/UDESA/tercer/algoritmos/Tp4/web-Google.txt', 'r') as file:
     for l in file:
         if "# FromNodeId	ToNodeId" in l:
             break
@@ -100,7 +100,7 @@ def triangles(undirected_graph: Graph) -> int:
 
     return cant
 
-def graph_diameter(undirected_graph: Graph) -> int: #mejorar con 2 bfs
+def graph_diameter(undirected_graph: Graph) -> int: 
     visited = set()
     diameter = 0
 
@@ -116,3 +116,32 @@ def graph_diameter(undirected_graph: Graph) -> int: #mejorar con 2 bfs
 
     return diameter
 
+def diameter_from_estimation(distances: dict) -> int:
+    diameter = 0
+    for i in distances.values():
+        diameter = max(diameter, max(distances.values()))
+        
+    return diameter
+if __name__ == "__main__":
+    print("Análisis de grafo web\n")
+
+    # Punto 1: Componentes conexas
+    componentes = max_component(undirected_graph)
+    print(f"1) Componente conexa más grande: {componentes['mayor']} nodos")
+    print(f"   Cantidad de componentes conexas: {componentes['cant']}")
+
+    # Punto 2: Estimar tiempo de caminos mínimos (comentado para evitar ejecuciones largas)
+    # distancias = min_todos(page_graph)
+    print("2) Caminos mínimos entre todas las páginas: función definida, no ejecutada por tiempo")
+
+    # Punto 3: Triángulos
+    cantidad_triangulos = triangles(undirected_graph)
+    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
+
+    # Punto 4: Diámetro
+    diametro = graph_diameter(undirected_graph)
+    print(f"4) Diámetro del grafo: {diametro}")
+
+    # Punto 5 y 6 no implementados en el código actual
+    print("5) PageRank: no implementado aún")
+    print("6) Circunferencia del grafo: no implementado aún")
