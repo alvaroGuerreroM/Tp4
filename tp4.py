@@ -3,6 +3,7 @@ from collections import deque
 import random
 from tqdm import tqdm
 import time
+from multiprocessing import Pool, cpu_count
 
 
 page_graph = Graph()
@@ -81,11 +82,12 @@ def max_component(undirected_graph: Graph) -> dict:
     
     return sol
 
-def min_todos_estimation(graph: Graph) -> dict: 
+
+def min_todos_estimation(graph: Graph, sample_size: int = 1000) -> dict: 
     distances = {}
     random_v = set()
 
-    while len(random_v) < 1000:
+    while len(random_v) < sample_size:
         random_v.add(random.choice(list(graph._graph.keys())))
 
     start_time = time.time()
@@ -113,10 +115,23 @@ def triangles(undirected_graph: Graph) -> int:
 
     return cant
 
+def triangles_directed(graph: Graph) -> int:
+    cant = 0
+    for a in graph._graph:
+        neighbors_a = set(graph.get_neighbors(a))
+        for b in graph.get_neighbors(a):
+            neighbors_b = set(graph.get_neighbors(b))
+            intersection = neighbors_a & neighbors_b
+
+            for c in intersection:
+                cant += 1 if a in graph.get_neighbors(c) else 0
+
+    return cant // 3
+
 def diameter_from_estimation(distances: dict) -> int:
     diameter = 0
-    for i in distances.values():
-        diameter = max(diameter, max(distances.values()))
+    for dist in distances.values():
+        diameter = max(diameter, max(dist.values()))
 
     return diameter
 
@@ -129,12 +144,12 @@ if __name__ == "__main__":
     #print(f"   Cantidad de componentes conexas: {componentes['cant']}")
 
     # Punto 2: Estimar tiempo de caminos mínimos (comentado para evitar ejecuciones largas)
-    distancias = min_todos_estimation(page_graph)
-    print("2) Caminos mínimos entre todas las páginas: ")
+    print("2) Caminos mínimos entre todas las páginas:\n")
+    distancias = min_todos_estimation(page_graph, 1000)
 
     # Punto 3: Triángulos
-    #cantidad_triangulos = triangles(undirected_graph)
-    #print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
+    cantidad_triangulos = triangles(undirected_graph)
+    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
 
     # Punto 4: Diámetro
     diametro = diameter_from_estimation(distancias)
