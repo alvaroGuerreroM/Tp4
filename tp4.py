@@ -1,5 +1,9 @@
 from graph import Graph
 from collections import deque
+import random
+from tqdm import tqdm
+import time
+
 
 page_graph = Graph()
 
@@ -77,12 +81,21 @@ def max_component(undirected_graph: Graph) -> dict:
     
     return sol
 
-#orden: O(n*(n+m)) | tiempo: (vertexs),n=875.713 (edges),m=5.105.039  O(875.713*(875.713 + 5.105.039)) |
-def min_todos(graph: Graph) -> dict: 
+def min_todos_estimation(graph: Graph) -> dict: 
     distances = {}
+    random_v = set()
 
-    for vertex in graph._graph:
+    while len(random_v) < 1000:
+        random_v.add(random.choice(list(graph._graph.keys())))
+
+    start_time = time.time()
+    for vertex in tqdm(random_v, desc="Calculando caminos mínimos"):
         distances[vertex] = bfs(graph, vertex)
+
+    end_time = time.time()
+    total_time = end_time - start_time
+
+    print(f"\n⏱ Tiempo total: {total_time:.2f} segundos")
         
     return distances 
 
@@ -100,48 +113,33 @@ def triangles(undirected_graph: Graph) -> int:
 
     return cant
 
-def graph_diameter(undirected_graph: Graph) -> int: 
-    visited = set()
-    diameter = 0
-
-    for vertex in undirected_graph._graph:
-        if vertex not in visited:
-            bfs_1 = bfs(undirected_graph, vertex)
-            visited.update(bfs_1.keys())
-            farthest_v = max(bfs_1, key=bfs_1.get)
-
-            bfs_2 = bfs(undirected_graph, farthest_v)
-            diameter = max(diameter, max(bfs_2.values()))
-
-
-    return diameter
-
 def diameter_from_estimation(distances: dict) -> int:
     diameter = 0
     for i in distances.values():
         diameter = max(diameter, max(distances.values()))
-        
+
     return diameter
+
 if __name__ == "__main__":
     print("Análisis de grafo web\n")
 
     # Punto 1: Componentes conexas
-    componentes = max_component(undirected_graph)
-    print(f"1) Componente conexa más grande: {componentes['mayor']} nodos")
-    print(f"   Cantidad de componentes conexas: {componentes['cant']}")
+    #componentes = max_component(undirected_graph)
+    #print(f"1) Componente conexa más grande: {componentes['mayor']} nodos")
+    #print(f"   Cantidad de componentes conexas: {componentes['cant']}")
 
     # Punto 2: Estimar tiempo de caminos mínimos (comentado para evitar ejecuciones largas)
-    # distancias = min_todos(page_graph)
-    print("2) Caminos mínimos entre todas las páginas: función definida, no ejecutada por tiempo")
+    distancias = min_todos_estimation(page_graph)
+    print("2) Caminos mínimos entre todas las páginas: ")
 
     # Punto 3: Triángulos
-    cantidad_triangulos = triangles(undirected_graph)
-    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
+    #cantidad_triangulos = triangles(undirected_graph)
+    #print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
 
     # Punto 4: Diámetro
-    diametro = graph_diameter(undirected_graph)
+    diametro = diameter_from_estimation(distancias)
     print(f"4) Diámetro del grafo: {diametro}")
 
     # Punto 5 y 6 no implementados en el código actual
-    print("5) PageRank: no implementado aún")
-    print("6) Circunferencia del grafo: no implementado aún")
+    #print("5) PageRank: no implementado aún")
+    #print("6) Circunferencia del grafo: no implementado aún")
