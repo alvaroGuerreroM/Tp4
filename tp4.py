@@ -3,8 +3,6 @@ from collections import deque
 import random
 from tqdm import tqdm
 import time
-from multiprocessing import Pool, cpu_count
-
 
 page_graph = Graph()
 
@@ -115,12 +113,24 @@ def triangles(graph: Graph) -> int:
 
 def diameter_from_estimation(distances: dict) -> int:
     diameter = 0
-    for dist in distances.values():
-        diameter = max(diameter, max(dist.values()))
+
+    for dist in tqdm(distances.values(), desc="Calculando diametro"):
+        farthest_v = max(dist, key=dist.get)
+
+        bfs_2 = bfs(page_graph, farthest_v)
+        diameter = max(diameter, max(bfs_2.values()))
 
     return diameter
 
+def PageRank(graph: Graph, sample_size: int) -> dict:
+    rank = {}
+    random_v = set()
 
+    while len(random_v) < sample_size:
+        random_v.add(random.choice(list(graph._graph.keys())))
+
+    for vertex in tqdm(random_v, desc="Calculando PageRank"):
+        visitados = dfs(graph, vertex)
 
 if __name__ == "__main__":
     print("Análisis de grafo web\n")
@@ -132,7 +142,7 @@ if __name__ == "__main__":
 
     # Punto 2: Estimar tiempo de caminos mínimos
     print("2) Caminos mínimos entre todas las páginas:")
-    distancias = min_todos_estimation(page_graph, 1000)
+    distancias = min_todos_estimation(page_graph, 500)
 
     # Punto 3: Triángulos
     cantidad_triangulos = triangles(page_graph)
