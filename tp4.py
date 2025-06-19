@@ -82,7 +82,6 @@ def max_component(undirected_graph: Graph) -> dict:
     
     return sol
 
-
 def min_todos_estimation(graph: Graph, sample_size: int) -> dict: 
     distances = {}
     random_v = set()
@@ -97,7 +96,7 @@ def min_todos_estimation(graph: Graph, sample_size: int) -> dict:
     end_time = time.time()
     total_time = end_time - start_time
 
-    print(f"\nTiempo total: {total_time:.2f} segundos")
+    print(f"Tiempo total: {total_time:.2f} segundos\n")
         
     return distances 
 
@@ -107,8 +106,10 @@ def triangles(graph: Graph) -> int:
     for a in graph._graph:
         visited_v.add(a)
         for b in graph.get_neighbors(a):
-            for c in graph.get_neighbors(b):
-                cant += 1 if a in graph.get_neighbors(c) else 0
+            if b not in visited_v:
+                for c in graph.get_neighbors(b):
+                    if c not in visited_v:
+                        cant += 1 if a in graph.get_neighbors(c) else 0
 
     return cant
 
@@ -119,26 +120,27 @@ def diameter_from_estimation(distances: dict) -> int:
 
     return diameter
 
+
+
 if __name__ == "__main__":
     print("Análisis de grafo web\n")
 
     # Punto 1: Componentes conexas
     componentes = max_component(undirected_graph)
     print(f"1) Componente conexa más grande: {componentes['mayor']} nodos")
-    print(f"   Cantidad de componentes conexas: {componentes['cant']}")
+    print(f"   Cantidad de componentes conexas: {componentes['cant']}\n")
 
-    # Punto 2: Estimar tiempo de caminos mínimos (comentado para evitar ejecuciones largas)
-    print("2) Caminos mínimos entre todas las páginas:\n")
+    # Punto 2: Estimar tiempo de caminos mínimos
+    print("2) Caminos mínimos entre todas las páginas:")
     distancias = min_todos_estimation(page_graph, 1000)
 
     # Punto 3: Triángulos
     cantidad_triangulos = triangles(page_graph)
-    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
+    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}\n")
 
-    # Punto 4: Diámetro
+    # Punto 4: Estimacion diámetro
     diametro = diameter_from_estimation(distancias)
-    print(f"4) Diámetro del grafo: {diametro}")
+    print(f"4) Diámetro del grafo: {diametro}\n")
 
-    # Punto 5 y 6 no implementados en el código actual
-    #print("5) PageRank: no implementado aún")
-    #print("6) Circunferencia del grafo: no implementado aún")
+    #print("5) PageRank:"
+    #print("6) Circunferencia del grafo:"
