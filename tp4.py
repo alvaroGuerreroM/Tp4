@@ -1,5 +1,6 @@
 from graph import Graph
 from collections import deque
+from collections import defaultdict
 import random
 from tqdm import tqdm
 import time
@@ -88,13 +89,17 @@ def min_todos_estimation(graph: Graph, sample_size: int) -> dict:
         random_v.add(random.choice(list(graph._graph.keys())))
 
     start_time = time.time()
-    for vertex in tqdm(random_v, desc="Calculando caminos mínimos"):
+    for vertex in random_v:
         distances[vertex] = bfs(graph, vertex)
 
     end_time = time.time()
     total_time = end_time - start_time
+    bfs_time = total_time/1000
+    estimation_time = (bfs_time*875713)/86400 #en dias
 
-    print(f"Tiempo total: {total_time:.2f} segundos\n")
+    print(f"Tiempo total: {total_time:.2f} segundos")
+    print(f"Tiempo promedio BFS: {bfs_time:.2f} segundos")
+    print(f"Tiempo estimacion: {estimation_time:.2f} dias\n")
         
     return distances 
 
@@ -113,24 +118,41 @@ def triangles(graph: Graph) -> int:
 
 def diameter_from_estimation(distances: dict) -> int:
     diameter = 0
+    visited_f = set()
 
-    for dist in tqdm(distances.values(), desc="Calculando diametro"):
+    for dist in distances.values():
         farthest_v = max(dist, key=dist.get)
 
-        bfs_2 = bfs(page_graph, farthest_v)
-        diameter = max(diameter, max(bfs_2.values()))
+        if farthest_v not in visited_f:
+            visited_f.add(farthest_v)
+            bfs_2 = bfs(page_graph, farthest_v)
+            diameter = max(diameter, max(bfs_2.values()), max(dist.values()))
 
     return diameter
 
-def PageRank(graph: Graph, sample_size: int) -> dict:
-    rank = {}
+def PageRank(graph: Graph, sample_size: int, step: int) -> dict:
+    rank = defaultdict(int)
     random_v = set()
 
     while len(random_v) < sample_size:
         random_v.add(random.choice(list(graph._graph.keys())))
 
-    for vertex in tqdm(random_v, desc="Calculando PageRank"):
-        visitados = dfs(graph, vertex)
+    for start in random_v:
+        current = start
+
+        for _ in range(step):
+            rank[current] += 1
+            neighbors = graph.get_neighbors(current)
+
+            if not neighbors:
+                break  
+
+            current = random.choice(neighbors)
+    
+    return rank
+
+
+        
 
 if __name__ == "__main__":
     print("Análisis de grafo web\n")
@@ -142,15 +164,21 @@ if __name__ == "__main__":
 
     # Punto 2: Estimar tiempo de caminos mínimos
     print("2) Caminos mínimos entre todas las páginas:")
-    distancias = min_todos_estimation(page_graph, 500)
+    distancias = min_todos_estimation(page_graph, 10)
 
     # Punto 3: Triángulos
     cantidad_triangulos = triangles(page_graph)
-    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}\n")
+    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
 
     # Punto 4: Estimacion diámetro
     diametro = diameter_from_estimation(distancias)
     print(f"4) Diámetro del grafo: {diametro}\n")
 
     #print("5) PageRank:"
+    resultados = PageRank(page_graph, sample_size=10000, step=200)
+    rank_ordenado = sorted(resultados.items(), key=lambda x: x[1], reverse=True)
+    print("PageRank:")
+    for v, r in rank_ordenado[:10]:
+        print(f"{v}: {r}")
+        
     #print("6) Circunferencia del grafo:"
