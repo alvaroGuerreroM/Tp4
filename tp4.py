@@ -48,6 +48,24 @@ def dfs(graph: Graph, vertex: str) -> set:
 
     return visited
 
+def dfs_cycle(graph: Graph, start: str, visited: set, path: list, start_vertex: str, max_cycle: int, depth_limit: int) -> int:
+    path.append(start)
+    visited.add(start)
+    
+    if len(path) > max_cycle and start_vertex in graph.get_neighbors(start):
+        max_cycle = len(path)
+    
+    if len(path) < depth_limit:
+        for neighbor in graph.get_neighbors(start):
+            if neighbor not in visited:
+                max_cycle = dfs_cycle(graph, neighbor, visited, path, start_vertex, max_cycle, depth_limit)
+    
+    visited.remove(start)
+    path.pop()
+    
+    return max_cycle
+
+
 def bfs(graph: Graph, vertex: str) -> dict:
     distances = {}
     queue = deque()
@@ -94,7 +112,7 @@ def min_todos_estimation(graph: Graph, sample_size: int) -> dict:
 
     end_time = time.time()
     total_time = end_time - start_time
-    bfs_time = total_time/1000
+    bfs_time = total_time/sample_size
     estimation_time = (bfs_time*875713)/86400 #en dias
 
     print(f"Tiempo total: {total_time:.2f} segundos")
@@ -151,8 +169,37 @@ def PageRank(graph: Graph, sample_size: int, step: int) -> dict:
     
     return rank
 
+def circumference(graph: Graph, ranked_vertices: list, depth_limit: int, sample_size: int) -> int:
+    sampled = ranked_vertices[:sample_size]
+    if len(sampled) < sample_size:
+        pool = [v for v in graph._graph if v not in sampled]
+        sampled += random.sample(pool, sample_size - len(sampled))
+    
+    return max(dfs_cycle(graph, v, set(), [], v, 0, depth_limit) for v in sampled)
 
-        
+def clustering_coefficient(graph: Graph) -> float:
+    coefficients = []
+
+    for vertex in graph._graph:
+        neighbors = graph.get_neighbors(vertex)
+        k = len(neighbors)
+        if k < 2:
+            coefficients.append(0)
+            continue
+
+        links = 0
+        for i in range(k):
+            for j in range(i+1, k):
+                if graph.edge_exists(neighbors[i], neighbors[j]) or graph.edge_exists(neighbors[j], neighbors[i]):
+                    links += 1
+
+        coeff = (2*links)/(k*(k - 1))
+        coefficients.append(coeff)
+
+    if coefficients:
+        return sum(coefficients)/len(coefficients)
+    else:
+        return 0
 
 if __name__ == "__main__":
     print("Análisis de grafo web\n")
@@ -168,17 +215,25 @@ if __name__ == "__main__":
 
     # Punto 3: Triángulos
     cantidad_triangulos = triangles(page_graph)
-    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}")
+    print(f"3) Cantidad de triángulos en el grafo: {cantidad_triangulos}\n")
 
     # Punto 4: Estimacion diámetro
     diametro = diameter_from_estimation(distancias)
     print(f"4) Diámetro del grafo: {diametro}\n")
 
-    #print("5) PageRank:"
-    resultados = PageRank(page_graph, sample_size=10000, step=200)
+    # Punto 5: PageRank:
+    resultados = PageRank(page_graph, sample_size=1000, step=200)
     rank_ordenado = sorted(resultados.items(), key=lambda x: x[1], reverse=True)
-    print("PageRank:")
+    print("5) PageRank:")
     for v, r in rank_ordenado[:10]:
         print(f"{v}: {r}")
-        
-    #print("6) Circunferencia del grafo:"
+
+    # Punto 6: Circunferencia
+    sampled_vertices = [v for v, _ in rank_ordenado]
+    circ = circumference(page_graph, sampled_vertices, 100, 200)
+    print(f"\n6) Circunferencia del grafo: {circ}")
+
+    # Adicionales 2: clustering
+    #clustering = clustering_coefficient(undirected_graph)
+    #print(f"\nPunto extra 2) Coeficiente de clustering global: {clustering:.4f}")
+
